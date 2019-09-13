@@ -1,0 +1,21 @@
+--Вебинар 1
+--Быстрый старт
+(команды в терминале Linux)
+
+--Устанавливаем MySQL
+
+wget -c https://dev.mysql.com/get/mysql-apt-config_0.8.10-1_all.deb
+sudo apt-key adv --keyserver keys.gnupg.net --recv-keys 5072E1F5
+sudo  dpkg -i mysql-apt-config_0.8.10-1_all.deb
+sudo apt update
+sudo apt-get install mysql-server
+
+--Устанавливаем Workbench
+sudo apt-get install mysql-workbench-community
+
+--Проверяем версии клиента и сервера
+mysql -V
+mysqld -V
+
+--Проверяем работает ли сервер
+sudo systemctl status mysql
