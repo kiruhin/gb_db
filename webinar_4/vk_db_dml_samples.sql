@@ -54,7 +54,7 @@ SELECT filename FROM media
 SELECT filename FROM media 
 WHERE user_id = (select id from users where email = 'arlo50@example.org')
     AND media_type_id = (
-      SELECT id FROM media_types WHERE name LIKE 'photo'
+      SELECT id FROM media_types WHERE name LIKE 'photo' -- если не знаем id
     ); 
    
 -- ------------------------------------------ новости
@@ -66,13 +66,14 @@ select *
   FROM media 
   WHERE user_id = 1;
   
--- Выбираем путь к файлам медиа, которые есть в новостях (они же фотки)
+-- Выбираем путь к видео файлам, которые есть в новостях
 SELECT filename FROM media 
 	WHERE user_id = 1
   AND media_type_id = (
-    SELECT id FROM media_types WHERE name LIKE 'photo'
+    SELECT id FROM media_types WHERE name LIKE 'video' limit 1
 );
 
+-- Аггрегирующие функции (avg, max, min, count) 
 -- Подсчитываем количество таких файлов
 SELECT COUNT(*) FROM media 
 	WHERE user_id = 1
@@ -89,7 +90,7 @@ SELECT
 FROM media
 GROUP BY month_name
 -- order by month(created_at) -- упорядочим по месяцам
-order by count(id) desc -- узнаем самые активные месяцы
+order by media desc -- узнаем самые активные месяцы
 ; 
 
 -- сколько новостей у каждого пользователя?  
@@ -217,3 +218,21 @@ SELECT user_id,
 	  union
 	  SELECT target_user_id FROM friend_requests WHERE (initiator_user_id = 1) AND status='approved' -- ИД друзей, подрвердивших мою заявку
   );
+
+-- Является ли пользователь админом данного сообщества?
+-- добавляем поле admin_user_id в таблицу communities
+ALTER TABLE vk.communities ADD admin_user_id INT DEFAULT 1 NOT NULL;
+-- ALTER TABLE vk.communities ADD CONSTRAINT communities_fk FOREIGN KEY (admin_user_id) REFERENCES vk.users(id);
+
+-- установим пользователя с id = 1 в качестве админа ко всем сообществам
+update communities
+set admin_user_id = 1;
+
+-- является ли пользователь админом группы?
+-- user_id = 1
+-- community_id = 5
+select 2 = (
+	select admin_user_id
+	from communities
+	where id = 5
+	) as 'is admin';
