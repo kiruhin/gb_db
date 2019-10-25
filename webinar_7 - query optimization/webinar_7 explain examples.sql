@@ -16,3 +16,36 @@ explain select
     JOIN profiles ON users.id = profiles.user_id
  WHERE users.id = 1
  GROUP BY media.id;
+
+-- Выводим друзей пользователя с преобразованием пола и возраста 
+SELECT user_id, 
+	-- , gender -- сначала выведем так, потом заменим на CASE ниже 
+    CASE (gender)
+         WHEN 'm' THEN 'male'
+         WHEN 'f' THEN 'female'
+    END AS gender, 
+    TIMESTAMPDIFF(YEAR, birthday, NOW()) AS age -- функция определяет разницу между датами в выбранных единицах (YEAR)
+  FROM profiles p
+  join 
+  ( -- 1,2,3 union 4,5,6 -- это мы уже делали сегодня раньше (получали подтвержденных друзей пользователя)
+	  SELECT initiator_user_id as uid FROM friend_requests WHERE (target_user_id = 1) AND status='approved' -- ИД друзей, заявку которых я подтвердил
+	  union
+	  SELECT target_user_id as uid FROM friend_requests WHERE (initiator_user_id = 1) AND status='approved' -- ИД друзей, подрвердивших мою заявку
+  ) as list on p.user_id = list.uid
+ 
+  
+  -- Выводим друзей пользователя с преобразованием пола и возраста 
+  -- Оптимизируем запрос, переведя его на объединение таблиц (JOIN)
+SELECT user_id, 
+	-- , gender -- сначала выведем так, потом заменим на CASE ниже 
+    CASE (gender)
+         WHEN 'm' THEN 'male'
+         WHEN 'f' THEN 'female'
+    END AS gender, 
+    TIMESTAMPDIFF(YEAR, birthday, NOW()) AS age -- функция определяет разницу между датами в выбранных единицах (YEAR)
+  FROM profiles
+  WHERE user_id IN ( -- 1,2,3 union 4,5,6 -- это мы уже делали сегодня раньше (получали подтвержденных друзей пользователя)
+	  SELECT initiator_user_id FROM friend_requests WHERE (target_user_id = 1) AND status='approved' -- ИД друзей, заявку которых я подтвердил
+	  union
+	  SELECT target_user_id FROM friend_requests WHERE (initiator_user_id = 1) AND status='approved' -- ИД друзей, подрвердивших мою заявку
+  );
